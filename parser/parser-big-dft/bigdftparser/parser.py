@@ -24,11 +24,13 @@ class BigDFTParser(ParserInterface):
         """
         # Search for the BigDFT version specification. The correct parser is
         # initialized based on this information.
-        regex_version = re.compile("              Northwest Computational Chemistry Package \(NWChem\) (\d+\.\d+)")
+        regex_version = re.compile(" Version Number\s+: (\d\.\d)")
         version_id = None
         with open(self.parser_context.main_file, 'r') as outputfile:
-            for line in outputfile:
-                # Look for version
+            header = outputfile.read(50*80)
+            for line in header.split("\n"):
+
+                # Look for version definition
                 result_version = regex_version.match(line)
                 if result_version:
                     version_id = result_version.group(1).replace('.', '')
@@ -64,7 +66,7 @@ class BigDFTParser(ParserInterface):
             parser_module = importlib.import_module(base)
         except ImportError:
             logger.warning("Could not find a parser for version '{}'. Trying to default to the base implementation for BigDFT 1.8.0".format(version_id))
-            base = "bigdftparser.versions.bigdft180.mainparser"
+            base = "bigdftparser.versions.bigdft18.mainparser"
             try:
                 parser_module = importlib.import_module(base)
             except ImportError:
