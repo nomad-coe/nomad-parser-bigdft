@@ -101,6 +101,16 @@ class TestSinglePoint(unittest.TestCase):
         ), "angstrom")
         self.assertTrue(np.array_equal(atom_position, expected_position))
 
+    def test_atom_forces(self):
+        result = self.results["atom_forces"]
+        expected_result = convert_unit(np.array(
+            [
+                [-1.694065894509E-21,  -3.388131789017E-21, 5.670554140677E-02],
+                [1.694065894509E-21,  3.388131789017E-21, -5.670554140677E-02],
+            ]
+        ), "hartree/bohr")
+        self.assertTrue(np.array_equal(result, expected_result))
+
     def test_number_of_atoms(self):
         n_atoms = self.results["number_of_atoms"]
         self.assertEqual(n_atoms, 2)
@@ -117,63 +127,45 @@ class TestSinglePoint(unittest.TestCase):
         result = self.results["number_of_spin_channels"]
         self.assertEqual(result, 1)
 
-    # def test_energy_total(self):
-        # result = self.results["energy_total"]
-        # expected_result = convert_unit(np.array(-76.436222730188), "hartree")
-        # self.assertTrue(np.array_equal(result, expected_result))
+    def test_energy_total(self):
+        result = self.results["energy_total"]
+        expected_result = convert_unit(np.array(-1.98834837256869790E+01), "hartree")
+        self.assertTrue(np.array_equal(result, expected_result))
 
-    # def test_energy_x(self):
-        # result = self.results["energy_X"]
-        # expected_result = convert_unit(np.array(-9.025345841743), "hartree")
-        # self.assertTrue(np.array_equal(result, expected_result))
+    def test_energy_total_scf_iteration(self):
+        result = self.results["energy_total_scf_iteration"]
+        # Test the first and last energies
+        expected_result = convert_unit(np.array(
+            [
+                [-1.96096887307935432E+01],
+                [-1.98834837256869790E+01],
+            ]), "hartree")
+        self.assertTrue(np.array_equal(np.array([[result[0]], [result[-1]]]), expected_result))
 
-    # def test_energy_c(self):
-        # result = self.results["energy_C"]
-        # expected_result = convert_unit(np.array(-0.328011552453), "hartree")
-        # self.assertTrue(np.array_equal(result, expected_result))
-
-    # def test_energy_total_scf_iteration(self):
-        # result = self.results["energy_total_scf_iteration"]
-        # # Test the first and last energies
-        # expected_result = convert_unit(np.array(
-            # [
-                # [-76.3916403957],
-                # [-76.4362227302],
-            # ]), "hartree")
-        # self.assertTrue(np.array_equal(np.array([[result[0]], [result[-1]]]), expected_result))
-
-    # def test_energy_change_scf_iteration(self):
-        # result = self.results["energy_change_scf_iteration"]
-        # expected_result = convert_unit(np.array(
-            # [
-                # [-8.55E+01],
-                # [-3.82E-07],
-            # ]), "hartree")
-        # self.assertTrue(np.array_equal(np.array([[result[0]], [result[-1]]]), expected_result))
+    def test_energy_change_scf_iteration(self):
+        result = self.results["energy_change_scf_iteration"]
+        expected_result = convert_unit(np.array(
+            [
+                [-1.58E-03],
+                [-1.78E-09],
+            ]), "hartree")
+        self.assertTrue(np.array_equal(np.array([[result[0]], [result[-1]]]), expected_result))
 
     def test_scf_max_iteration(self):
         result = self.results["scf_max_iteration"]
         self.assertEqual(result, 50)
 
-    def test_scf_threshold_energy_change(self):
-        result = self.results["scf_threshold_energy_change"]
-        self.assertEqual(result, convert_unit(1.0E-04, "hartree"))
+    def test_scf_dft_number_of_iterations(self):
+        result = self.results["number_of_scf_iterations"]
+        self.assertEqual(result, 11)
 
-    # def test_scf_dft_number_of_iterations(self):
-        # result = self.results["number_of_scf_iterations"]
-        # self.assertEqual(result, 6)
+    def test_single_configuration_to_calculation_method_ref(self):
+        result = self.results["single_configuration_to_calculation_method_ref"]
+        self.assertEqual(result, 0)
 
-    # def test_spin_target_multiplicity(self):
-        # multiplicity = self.results["spin_target_multiplicity"]
-        # self.assertEqual(multiplicity, 1)
-
-    # def test_single_configuration_to_calculation_method_ref(self):
-        # result = self.results["single_configuration_to_calculation_method_ref"]
-        # self.assertEqual(result, 0)
-
-    # def test_single_configuration_calculation_to_system_description_ref(self):
-        # result = self.results["single_configuration_calculation_to_system_ref"]
-        # self.assertEqual(result, 0)
+    def test_single_configuration_calculation_to_system_description_ref(self):
+        result = self.results["single_configuration_calculation_to_system_ref"]
+        self.assertEqual(result, 0)
 
     # def test_single_configuration_calculation_converged(self):
         # result = self.results["single_configuration_calculation_converged"]
@@ -186,9 +178,106 @@ class TestSinglePoint(unittest.TestCase):
 
 
 #===============================================================================
+class TestPeriodicity(unittest.TestCase):
+    """Tests that the parser can handle different boundary conditions.
+    """
+    def test_periodic(self):
+        results = get_results("periodicity/periodic")
+        result = results["configuration_periodic_dimensions"]
+        self.assertTrue(np.array_equal(result, np.array([True, True, True])))
+
+    def test_surface(self):
+        results = get_results("periodicity/surface")
+        result = results["configuration_periodic_dimensions"]
+        self.assertTrue(np.array_equal(result, np.array([True, False, True])))
+
+    def test_free(self):
+        results = get_results("periodicity/free")
+        result = results["configuration_periodic_dimensions"]
+        self.assertTrue(np.array_equal(result, np.array([False, False, False])))
+
+
+#===============================================================================
+class TestXCFunctionals(unittest.TestCase):
+    """Tests that the parser can handle different XC functional codes.
+    """
+    def test_abinit_1(self):
+        results = get_results("xc_functionals/abinit_1")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*LDA_XC_TETER93")
+
+    def test_abinit_11(self):
+        results = get_results("xc_functionals/abinit_11")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_PBE")
+
+    def test_abinit_12(self):
+        results = get_results("xc_functionals/abinit_12")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*GGA_X_PBE")
+
+    # YAML parse error
+    # def test_abinit_15(self):
+        # results = get_results("xc_functionals/abinit_15")
+        # result = results["XC_functional"]
+        # self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_RPBE")
+
+    # Error
+    # def test_abinit_16(self):
+        # results = get_results("xc_functionals/abinit_16")
+        # result = results["XC_functional"]
+        # self.assertEqual(result, "1.0*GGA_XC_HCTH_93")
+
+    # Error
+    # def test_abinit_17(self):
+        # results = get_results("xc_functionals/abinit_17")
+        # result = results["XC_functional"]
+        # self.assertEqual(result, "1.0*GGA_XC_HCTH_120")
+
+    # Error
+    # def test_abinit_26(self):
+        # results = get_results("xc_functionals/abinit_26")
+        # result = results["XC_functional"]
+        # self.assertEqual(result, "1.0*GGA_XC_HCTH_147")
+
+    # Error
+    # def test_abinit_27(self):
+        # results = get_results("xc_functionals/abinit_27")
+        # result = results["XC_functional"]
+        # self.assertEqual(result, "1.0*GGA_XC_HCTH_407")
+
+    def test_abinit_100(self):
+        results = get_results("xc_functionals/abinit_100")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*HF_X")
+
+    def test_libxc_001(self):
+        results = get_results("xc_functionals/libxc_001")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*LDA_X")
+
+    def test_libxc_010(self):
+        results = get_results("xc_functionals/libxc_010")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*LDA_C_PZ_MOD")
+
+    def test_libxc_101(self):
+        results = get_results("xc_functionals/libxc_101")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*GGA_X_PBE")
+
+    def test_libxc_101130(self):
+        results = get_results("xc_functionals/libxc_101130")
+        result = results["XC_functional"]
+        self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_PBE")
+
+
+#===============================================================================
 if __name__ == '__main__':
     suites = []
     suites.append(unittest.TestLoader().loadTestsFromTestCase(TestSinglePoint))
+    suites.append(unittest.TestLoader().loadTestsFromTestCase(TestPeriodicity))
+    suites.append(unittest.TestLoader().loadTestsFromTestCase(TestXCFunctionals))
 
     alltests = unittest.TestSuite(suites)
     unittest.TextTestRunner(verbosity=0).run(alltests)

@@ -1,0 +1,2 @@
+ dft:
+   ixc                                 : -1 #      Exchange-correlation parameter (LDA=1,PBE=11)
