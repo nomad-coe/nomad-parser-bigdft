@@ -59,37 +59,51 @@ class TestSinglePoint(unittest.TestCase):
         result = self.results["program_name"]
         self.assertEqual(result, "BigDFT")
 
+    def test_simulation_cell(self):
+        result = self.results["simulation_cell"]
+        expected_result = convert_unit(np.array(
+            [
+                [7.1439,  0, 0],
+                [0, 7.1439, 0],
+                [0, 0, 8.3345],
+            ]
+        ), "angstrom")
+        self.assertTrue(np.array_equal(result, expected_result))
+
     # def test_configuration_periodic_dimensions(self):
         # result = self.results["configuration_periodic_dimensions"]
         # self.assertTrue(np.array_equal(result, np.array([False, False, False])))
 
-    # def test_program_version(self):
-        # result = self.results["program_version"]
-        # self.assertEqual(result, "6.6")
+    def test_program_version(self):
+        result = self.results["program_version"]
+        self.assertEqual(result, "1.8")
 
     # def test_xc_functional(self):
         # result = self.results["XC_functional"]
         # self.assertEqual(result, "1.0*MGGA_C_TPSS+1.0*MGGA_X_TPSS")
 
-    # def test_atom_labels(self):
-        # atom_labels = self.results["atom_labels"]
-        # expected_labels = np.array(["O", "H", "H"])
-        # self.assertTrue(np.array_equal(atom_labels, expected_labels))
+    def test_atom_labels(self):
+        atom_labels = self.results["atom_labels"]
+        expected_labels = np.array(["N", "N"])
+        self.assertTrue(np.array_equal(atom_labels, expected_labels))
 
-    # def test_atom_positions(self):
-        # atom_position = self.results["atom_positions"]
-        # expected_position = convert_unit(np.array(
-            # [
-                # [0.00000000, 0.00000000, -0.11817375],
-                # [0.76924532, 0.00000000, 0.47269501],
-                # [-0.76924532, 0.00000000, 0.47269501],
-            # ]
-        # ), "angstrom")
-        # self.assertTrue(np.array_equal(atom_position, expected_position))
+    def test_atom_positions(self):
+        atom_position = self.results["atom_positions"]
+        expected_position = convert_unit(np.array(
+            [
+                [3.571946174,  3.571946174,  3.609775538],
+                [3.571946174,  3.571946174,  4.724765534],
+            ]
+        ), "angstrom")
+        self.assertTrue(np.array_equal(atom_position, expected_position))
 
-    # def test_number_of_atoms(self):
-        # n_atoms = self.results["number_of_atoms"]
-        # self.assertEqual(n_atoms, 3)
+    def test_number_of_atoms(self):
+        n_atoms = self.results["number_of_atoms"]
+        self.assertEqual(n_atoms, 2)
+
+    def test_electronic_structure_method(self):
+        result = self.results["electronic_structure_method"]
+        self.assertEqual(result, "DFT")
 
     # def test_total_charge(self):
         # charge = self.results["total_charge"]
@@ -137,9 +151,6 @@ class TestSinglePoint(unittest.TestCase):
         # result = self.results["scf_threshold_energy_change"]
         # self.assertEqual(result, convert_unit(1.00E-06, "hartree"))
 
-    # def test_electronic_structure_method(self):
-        # result = self.results["electronic_structure_method"]
-        # self.assertEqual(result, "DFT")
 
     # def test_scf_dft_number_of_iterations(self):
         # result = self.results["number_of_scf_iterations"]

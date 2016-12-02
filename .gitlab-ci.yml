@@ -9,7 +9,7 @@ testing:
     - cd nomad-lab-base
     - git submodule foreach git checkout master
     - git submodule foreach git pull
-    - sbt nwchem/test
+    - sbt bigdft/test
     - export PYTHONEXE=/labEnv/bin/python
     - sbt bigdft/test
   only:
