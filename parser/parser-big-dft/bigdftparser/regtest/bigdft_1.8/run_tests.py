@@ -59,6 +59,14 @@ class TestSinglePoint(unittest.TestCase):
         result = self.results["program_name"]
         self.assertEqual(result, "BigDFT")
 
+    def test_program_version(self):
+        result = self.results["program_version"]
+        self.assertEqual(result, "1.8")
+
+    def test_program_basis_set_type(self):
+        result = self.results["program_basis_set_type"]
+        self.assertEqual(result, "real-space grid")
+
     def test_simulation_cell(self):
         result = self.results["simulation_cell"]
         expected_result = convert_unit(np.array(
@@ -70,17 +78,13 @@ class TestSinglePoint(unittest.TestCase):
         ), "angstrom")
         self.assertTrue(np.array_equal(result, expected_result))
 
-    # def test_configuration_periodic_dimensions(self):
-        # result = self.results["configuration_periodic_dimensions"]
-        # self.assertTrue(np.array_equal(result, np.array([False, False, False])))
+    def test_configuration_periodic_dimensions(self):
+        result = self.results["configuration_periodic_dimensions"]
+        self.assertTrue(np.array_equal(result, np.array([False, False, False])))
 
-    def test_program_version(self):
-        result = self.results["program_version"]
-        self.assertEqual(result, "1.8")
-
-    # def test_xc_functional(self):
-        # result = self.results["XC_functional"]
-        # self.assertEqual(result, "1.0*MGGA_C_TPSS+1.0*MGGA_X_TPSS")
+    def test_xc_functional(self):
+        result = self.results["XC_functional"]
+        self.assertEqual(result, "1.0*LDA_XC_TETER93")
 
     def test_atom_labels(self):
         atom_labels = self.results["atom_labels"]
@@ -105,9 +109,13 @@ class TestSinglePoint(unittest.TestCase):
         result = self.results["electronic_structure_method"]
         self.assertEqual(result, "DFT")
 
-    # def test_total_charge(self):
-        # charge = self.results["total_charge"]
-        # self.assertEqual(charge, 0)
+    def test_total_charge(self):
+        charge = self.results["total_charge"]
+        self.assertEqual(charge, 0)
+
+    def test_number_of_spin_channels(self):
+        result = self.results["number_of_spin_channels"]
+        self.assertEqual(result, 1)
 
     # def test_energy_total(self):
         # result = self.results["energy_total"]
@@ -143,14 +151,13 @@ class TestSinglePoint(unittest.TestCase):
             # ]), "hartree")
         # self.assertTrue(np.array_equal(np.array([[result[0]], [result[-1]]]), expected_result))
 
-    # def test_scf_max_iteration(self):
-        # result = self.results["scf_max_iteration"]
-        # self.assertEqual(result, 50)
+    def test_scf_max_iteration(self):
+        result = self.results["scf_max_iteration"]
+        self.assertEqual(result, 50)
 
-    # def test_scf_threshold_energy_change(self):
-        # result = self.results["scf_threshold_energy_change"]
-        # self.assertEqual(result, convert_unit(1.00E-06, "hartree"))
-
+    def test_scf_threshold_energy_change(self):
+        result = self.results["scf_threshold_energy_change"]
+        self.assertEqual(result, convert_unit(1.0E-04, "hartree"))
 
     # def test_scf_dft_number_of_iterations(self):
         # result = self.results["number_of_scf_iterations"]
@@ -176,33 +183,6 @@ class TestSinglePoint(unittest.TestCase):
         # kind = self.results["section_method_atom_kind"][0]
         # self.assertEqual(kind["method_atom_kind_atom_number"][0], 1)
         # self.assertEqual(kind["method_atom_kind_label"][0], "H")
-
-    # def test_section_method_basis_set(self):
-        # kind = self.results["section_method_basis_set"][0]
-        # self.assertEqual(kind["method_basis_set_kind"][0], "wavefunction")
-        # self.assertTrue(np.array_equal(kind["mapping_section_method_basis_set_cell_associated"][0], 0))
-
-    # def test_number_of_spin_channels(self):
-        # result = self.results["number_of_spin_channels"]
-        # self.assertEqual(result, 1)
-
-    # def test_simulation_cell(self):
-        # cell = self.results["simulation_cell"]
-        # n_vectors = cell.shape[0]
-        # n_dim = cell.shape[1]
-        # self.assertEqual(n_vectors, 3)
-        # self.assertEqual(n_dim, 3)
-        # expected_cell = convert_unit(np.array([[15.1178, 0, 0], [0, 15.1178, 0], [0, 0, 15.1178]]), "bohr")
-        # self.assertTrue(np.array_equal(cell, expected_cell))
-
-    # def test_basis_set_cell_dependent(self):
-        # kind = self.results["basis_set_cell_dependent_kind"]
-        # name = self.results["basis_set_cell_dependent_name"]
-        # cutoff = self.results["basis_set_planewave_cutoff"]
-
-        # self.assertEqual(kind, "plane_waves")
-        # self.assertEqual(name, "PW_70.0")
-        # self.assertEqual(cutoff, convert_unit(70.00000, "rydberg"))
 
 
 #===============================================================================
