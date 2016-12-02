@@ -60,6 +60,8 @@ object BigDFTParser extends SimpleExternalParserGenerator(
     "parser-big-dft/bigdftparser/versions/__init__.py",
     "parser-big-dft/bigdftparser/versions/bigdft18/__init__.py",
     "parser-big-dft/bigdftparser/versions/bigdft18/mainparser.py",
+    "parser-big-dft/bigdftparser/generic/__init__.py",
+    "parser-big-dft/bigdftparser/generic/libxc_codes.py",
     "nomad_meta_info/public.nomadmetainfo.json",
     "nomad_meta_info/common.nomadmetainfo.json",
     "nomad_meta_info/meta_types.nomadmetainfo.json",
