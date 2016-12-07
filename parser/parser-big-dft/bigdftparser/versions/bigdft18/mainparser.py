@@ -38,6 +38,7 @@ class BigDFTMainParser(AbstractBaseParser):
         directly into memory.
         """
         self.prepare()
+        self.print_json_header()
         with open(self.file_path, "r") as fin:
             try:
                 # Open default sections and output default information
@@ -69,6 +70,8 @@ class BigDFTMainParser(AbstractBaseParser):
                 self.backend.closeSection("section_run", section_run_id)
             except YAMLError:
                 raise Exception("There was a syntax error in the BigDFT YAML output file.")
+
+        self.print_json_footer()
 
     def generate_root_nodes(self, loader):
         # Ignore the first two events
