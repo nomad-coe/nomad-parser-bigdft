@@ -21,30 +21,30 @@ object BigDFTParser extends SimpleExternalParserGenerator(
       )) :: Nil
   ),
   mainFileTypes = Seq("text/.*"),
-  mainFileRe = """__________________________________ A fast and precise DFT wavelet code
-   \|     \|     \|     \|     \|     \|
-   \|     \|     \|     \|     \|     \|      BBBB         i       gggggg
-   \|_____\|_____\|_____\|_____\|_____\|     B    B               g
-   \|     \|  :  \|  :  \|     \|     \|    B     B        i     g
-   \|     \|-0+--\|-0\+--\|     \|     \|    B    B         i     g        g
-   \|_____\|__:__\|__:__\|_____\|_____\|___ BBBBB          i     g         g
-   \|  :  \|     \|     \|  :  \|     \|    B    B         i     g         g
-   \|--\+0-\|     \|     \|-0\+--\|     \|    B     B     iiii     g         g
-   \|__:__\|_____\|_____\|__:__\|_____\|    B     B        i      g        g
-   \|     \|  :  \|  :  \|     \|     \|    B BBBB        i        g      g
-   \|     \|-0\+--\|-0\+--\|     \|     \|    B        iiiii          gggggg
-   \|_____\|__:__\|__:__\|_____\|_____\|__BBBBB
-   \|     \|     \|     \|  :  \|     \|                           TTTTTTTTT
-   \|     \|     \|     \|--\+0-\|     \|  DDDDDD          FFFFF        T
-   \|_____\|_____\|_____\|__:__\|_____\| D      D        F        TTTT T
-   \|     \|     \|     \|  :  \|     \|D        D      F        T     T
-   \|     \|     \|     \|--\+0-\|     \|D         D     FFFF     T     T
-   \|_____\|_____\|_____\|__:__\|_____\|D___      D     F         T    T
-   \|     \|     \|  :  \|     \|     \|D         D     F          TTTTT
-   \|     \|     \|--\+0-\|     \|     \| D        D     F         T    T
-   \|_____\|_____\|__:__\|_____\|_____\|          D     F        T     T
-   \|     \|     \|     \|     \|     \|         D               T    T
-   \|     \|     \|     \|     \|     \|   DDDDDD       F         TTTT
+  mainFileRe = """__________________________________ A fast and precise DFT wavelet code\s*
+   \|     \|     \|     \|     \|     \|\s*
+   \|     \|     \|     \|     \|     \|      BBBB         i       gggggg\s*
+   \|_____\|_____\|_____\|_____\|_____\|     B    B               g\s*
+   \|     \|  :  \|  :  \|     \|     \|    B     B        i     g\s*
+   \|     \|-0\+--\|-0\+--\|     \|     \|    B    B         i     g        g\s*
+   \|_____\|__:__\|__:__\|_____\|_____\|___ BBBBB          i     g         g\s*
+   \|  :  \|     \|     \|  :  \|     \|    B    B         i     g         g\s*
+   \|--\+0-\|     \|     \|-0\+--\|     \|    B     B     iiii     g         g\s*
+   \|__:__\|_____\|_____\|__:__\|_____\|    B     B        i      g        g\s*
+   \|     \|  :  \|  :  \|     \|     \|    B BBBB        i        g      g\s*
+   \|     \|-0\+--\|-0\+--\|     \|     \|    B        iiiii          gggggg\s*
+   \|_____\|__:__\|__:__\|_____\|_____\|__BBBBB\s*
+   \|     \|     \|     \|  :  \|     \|                           TTTTTTTTT\s*
+   \|     \|     \|     \|--\+0-\|     \|  DDDDDD          FFFFF        T\s*
+   \|_____\|_____\|_____\|__:__\|_____\| D      D        F        TTTT T\s*
+   \|     \|     \|     \|  :  \|     \|D        D      F        T     T\s*
+   \|     \|     \|     \|--\+0-\|     \|D         D     FFFF     T     T\s*
+   \|_____\|_____\|_____\|__:__\|_____\|D___      D     F         T    T\s*
+   \|     \|     \|  :  \|     \|     \|D         D     F          TTTTT\s*
+   \|     \|     \|--\+0-\|     \|     \| D        D     F         T    T\s*
+   \|_____\|_____\|__:__\|_____\|_____\|          D     F        T     T\s*
+   \|     \|     \|     \|     \|     \|         D               T    T\s*
+   \|     \|     \|     \|     \|     \|   DDDDDD       F         TTTT\s*
    \|_____\|_____\|_____\|_____\|_____\|______                    www\.bigdft\.org""".r,
   cmd = Seq(DefaultPythonInterpreter.pythonExe(), "${envDir}/parsers/big-dft/parser/parser-big-dft/bigdftparser/scalainterface.py",
     "${mainFilePath}"),
