@@ -7,15 +7,14 @@ from bigdftparser.generic.libxc_codes import LIB_XC_MAPPING
 LOGGER = logging.getLogger("nomad")
 
 
-#===============================================================================
 class BigDFTMainParser(AbstractBaseParser):
     """The main parser class that is called for all run types. Parses the NWChem
     output file.
     """
-    def __init__(self, file_path, parser_context):
+    def __init__(self, parser_context):
         """
         """
-        super(BigDFTMainParser, self).__init__(file_path, parser_context)
+        super(BigDFTMainParser, self).__init__(parser_context)
 
         # Map keys in the output to funtions that handle the values
         self.key_to_funct_map = {
@@ -30,7 +29,7 @@ class BigDFTMainParser(AbstractBaseParser):
             "Energy (Hartree)": lambda x: self.backend.addRealValue("energy_total", float(x), unit="hartree"),
         }
 
-    def parse(self):
+    def parse(self, filepath):
         """The output file of a BigDFT run is a YAML document. Here we directly
         parse this document with an existing YAML library, and push its
         contents into the backend. This function will read the document in
@@ -39,7 +38,7 @@ class BigDFTMainParser(AbstractBaseParser):
         """
         self.prepare()
         self.print_json_header()
-        with open(self.file_path, "r") as fin:
+        with open(filepath, "r") as fin:
             try:
                 # Open default sections and output default information
                 section_run_id = self.backend.openSection("section_run")

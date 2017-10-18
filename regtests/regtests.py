@@ -1,15 +1,3 @@
-"""
-This is a module for unit testing the BigDFT parser. The unit tests are run with
-a custom backend that outputs the results directly into native python object for
-easier and faster analysis.
-
-Each property that has an enumerable list of different possible options is
-assigned a new test class, that should ideally test through all the options.
-
-The properties that can have non-enumerable values will be tested only for one
-specific case inside a test class that is designed for a certain type of run
-(MD, optimization, QM/MM, etc.)
-"""
 import os
 import unittest
 import logging
@@ -18,41 +6,32 @@ from bigdftparser import BigDFTParser
 from nomadcore.unit_conversion.unit_conversion import convert_unit
 
 
-#===============================================================================
-def get_results(folder, metainfo_to_keep=None):
-    """Get the given result from the calculation in the given folder by using
-    the Analyzer in the nomadtoolkit package. Tries to optimize the parsing by
-    giving the metainfo_to_keep argument.
+def get_result(folder, metaname=None):
+    """Get the results from the calculation in the given folder. By default goes through different
 
     Args:
         folder: The folder relative to the directory of this script where the
             parsed calculation resides.
-        metaname: The quantity to extract.
+        metaname(str): Optional quantity to return. If not specified, returns
+            the full dictionary of results.
     """
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, folder, "output.out")
-    parser = BigDFTParser(filename, None, debug=True, log_level=logging.WARNING)
-    results = parser.parse()
-    return results
+    filename = os.path.join("bigdft_{}".format(VERSION), dirname, folder, "output.out")
+    parser = BigDFTParser(None, debug=True, log_level=logging.CRITICAL)
+    results = parser.parse(filename)
 
-
-#===============================================================================
-def get_result(folder, metaname, optimize=True):
-    if optimize:
-        results = get_results(folder, None)
+    if metaname is None:
+        return results
     else:
-        results = get_results(folder)
-    result = results[metaname]
-    return result
+        return results[metaname]
 
 
-#===============================================================================
 class TestSinglePoint(unittest.TestCase):
     """Tests that the parser can handle single point calculations.
     """
     @classmethod
     def setUpClass(cls):
-        cls.results = get_results("single_point", "section_run")
+        cls.results = get_result("single_point")
         # cls.results.print_summary()
 
     def test_program_name(self):
@@ -177,42 +156,40 @@ class TestSinglePoint(unittest.TestCase):
         # self.assertEqual(kind["method_atom_kind_label"][0], "H")
 
 
-#===============================================================================
 class TestPeriodicity(unittest.TestCase):
     """Tests that the parser can handle different boundary conditions.
     """
     def test_periodic(self):
-        results = get_results("periodicity/periodic")
+        results = get_result("periodicity/periodic")
         result = results["configuration_periodic_dimensions"]
         self.assertTrue(np.array_equal(result, np.array([True, True, True])))
 
     def test_surface(self):
-        results = get_results("periodicity/surface")
+        results = get_result("periodicity/surface")
         result = results["configuration_periodic_dimensions"]
         self.assertTrue(np.array_equal(result, np.array([True, False, True])))
 
     def test_free(self):
-        results = get_results("periodicity/free")
+        results = get_result("periodicity/free")
         result = results["configuration_periodic_dimensions"]
         self.assertTrue(np.array_equal(result, np.array([False, False, False])))
 
 
-#===============================================================================
 class TestXCFunctionals(unittest.TestCase):
     """Tests that the parser can handle different XC functional codes.
     """
     def test_abinit_1(self):
-        results = get_results("xc_functionals/abinit_1")
+        results = get_result("xc_functionals/abinit_1")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*LDA_XC_TETER93")
 
     def test_abinit_11(self):
-        results = get_results("xc_functionals/abinit_11")
+        results = get_result("xc_functionals/abinit_11")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_PBE")
 
     def test_abinit_12(self):
-        results = get_results("xc_functionals/abinit_12")
+        results = get_result("xc_functionals/abinit_12")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*GGA_X_PBE")
 
@@ -247,37 +224,40 @@ class TestXCFunctionals(unittest.TestCase):
         # self.assertEqual(result, "1.0*GGA_XC_HCTH_407")
 
     def test_abinit_100(self):
-        results = get_results("xc_functionals/abinit_100")
+        results = get_result("xc_functionals/abinit_100")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*HF_X")
 
     def test_libxc_001(self):
-        results = get_results("xc_functionals/libxc_001")
+        results = get_result("xc_functionals/libxc_001")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*LDA_X")
 
     def test_libxc_010(self):
-        results = get_results("xc_functionals/libxc_010")
+        results = get_result("xc_functionals/libxc_010")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*LDA_C_PZ_MOD")
 
     def test_libxc_101(self):
-        results = get_results("xc_functionals/libxc_101")
+        results = get_result("xc_functionals/libxc_101")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*GGA_X_PBE")
 
     def test_libxc_101130(self):
-        results = get_results("xc_functionals/libxc_101130")
+        results = get_result("xc_functionals/libxc_101130")
         result = results["XC_functional"]
         self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_PBE")
 
 
-#===============================================================================
 if __name__ == '__main__':
-    suites = []
-    suites.append(unittest.TestLoader().loadTestsFromTestCase(TestSinglePoint))
-    suites.append(unittest.TestLoader().loadTestsFromTestCase(TestPeriodicity))
-    suites.append(unittest.TestLoader().loadTestsFromTestCase(TestXCFunctionals))
 
-    alltests = unittest.TestSuite(suites)
-    unittest.TextTestRunner(verbosity=0).run(alltests)
+    VERSIONS = ["1.8"]
+
+    for VERSION in VERSIONS:
+        suites = []
+        suites.append(unittest.TestLoader().loadTestsFromTestCase(TestSinglePoint))
+        suites.append(unittest.TestLoader().loadTestsFromTestCase(TestPeriodicity))
+        suites.append(unittest.TestLoader().loadTestsFromTestCase(TestXCFunctionals))
+
+        alltests = unittest.TestSuite(suites)
+        unittest.TextTestRunner(verbosity=0).run(alltests)
