@@ -55,4 +55,4 @@ lib/
 env/
 
 # Egg
-parser/parser-big-dft/bigdftparser.egg-info/
+bigdftparser.egg-info/
