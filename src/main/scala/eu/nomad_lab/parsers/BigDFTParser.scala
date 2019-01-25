@@ -77,7 +77,7 @@ object BigDFTParser extends SimpleExternalParserGenerator(
     "parser-big-dft/bigdftparser/generic/libxc_codes.py",
     "nomad_meta_info/public.nomadmetainfo.json",
     "nomad_meta_info/common.nomadmetainfo.json",
-    "nomad_meta_info/meta_types.nomadmetainfo.json",
+    "nomad_meta_info/meta.nomadmetainfo.json",
     "nomad_meta_info/big_dft.nomadmetainfo.json"
   ) ++ DefaultPythonInterpreter.commonFiles(),
   dirMap = Map(
