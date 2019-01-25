@@ -63,7 +63,7 @@ class BigDFTMainParser(AbstractBaseParser):
                 self.backend.addValue("electronic_structure_method", "DFT")
                 self.backend.addValue("program_basis_set_type", "real-space grid")
                 self.backend.addValue("single_configuration_calculation_to_system_ref", section_system_id)
-                self.backend.addValue("single_configuration_to_calculation_method_ref", section_method_id)
+                self.backend.addValue("single_configuration_calculation_to_method_ref", section_method_id)
 
                 loader = Loader(fin)
                 generator = self.generate_root_nodes(loader)
@@ -132,9 +132,9 @@ class BigDFTMainParser(AbstractBaseParser):
             energy_change = iteration["D"]
             self.backend.addRealValue("energy_total_scf_iteration", etotal, unit="hartree")
             if exc is not None:
-                self.backend.addRealValue("energy_XC_scf_iteration", exc, unit="hartree")
+                self.backend.addRealValue("energy_xc_scf_iteration", exc, unit="hartree")
             if evxc is not None:
-                self.backend.addRealValue("energy_XC_potential_scf_iteration", evxc, unit="hartree")
+                self.backend.addRealValue("energy_xc_potential_scf_iteration", evxc, unit="hartree")
             self.backend.addRealValue("energy_change_scf_iteration", energy_change, unit="hartree")
             self.backend.closeSection("section_scf_iteration", scf_id)
 
@@ -189,7 +189,9 @@ class BigDFTMainParser(AbstractBaseParser):
         for force in value:
             forces.append(*force.values())
         forces = np.array(forces)
+        fId = self.backend.openSection('section_atom_forces')
         self.backend.addArrayValues("atom_forces", forces, unit="hartree/bohr")
+        self.backend.closeSection('section_atom_forces', fId)
 
     def dft_parameters(self, value):
         # XC functional
@@ -259,11 +261,11 @@ class BigDFTMainParser(AbstractBaseParser):
         n_names = len(sorted_xc)
         for i_name, name in enumerate(sorted_xc):
             weight = 1.0
-            xc_id = self.backend.openSection("section_XC_functionals")
-            self.backend.addValue("XC_functional_name", name)
-            self.backend.addValue("XC_functional_weight", weight)
-            self.backend.closeSection("section_XC_functionals", xc_id)
+            xc_id = self.backend.openSection("section_xc_functionals")
+            self.backend.addValue("xc_functional_name", name)
+            self.backend.addValue("xc_functional_weight", weight)
+            self.backend.closeSection("section_xc_functionals", xc_id)
             summary += "{}*{}".format(weight, name)
             if i_name+1 != n_names:
                 summary += "_"
-        self.backend.addValue("XC_functional", summary)
+        self.backend.addValue("xc_functional", summary)

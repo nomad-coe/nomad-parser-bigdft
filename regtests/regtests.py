@@ -76,7 +76,7 @@ class TestSinglePoint(unittest.TestCase):
         self.assertTrue(np.array_equal(result, np.array([False, False, False])))
 
     def test_xc_functional(self):
-        result = self.results["XC_functional"]
+        result = self.results["xc_functional"]
         self.assertEqual(result, "1.0*LDA_XC_TETER93")
 
     def test_atom_labels(self):
@@ -153,7 +153,7 @@ class TestSinglePoint(unittest.TestCase):
         self.assertEqual(result, 11)
 
     def test_single_configuration_to_calculation_method_ref(self):
-        result = self.results["single_configuration_to_calculation_method_ref"]
+        result = self.results["single_configuration_calculation_to_method_ref"]
         self.assertEqual(result, 0)
 
     def test_single_configuration_calculation_to_system_description_ref(self):
@@ -194,72 +194,72 @@ class TestXCFunctionals(unittest.TestCase):
     """
     def test_abinit_1(self):
         results = get_result("xc_functionals/abinit_1")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*LDA_XC_TETER93")
 
     def test_abinit_11(self):
         results = get_result("xc_functionals/abinit_11")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_PBE")
 
     def test_abinit_12(self):
         results = get_result("xc_functionals/abinit_12")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*GGA_X_PBE")
 
     # YAML parse error
     # def test_abinit_15(self):
         # results = get_results("xc_functionals/abinit_15")
-        # result = results["XC_functional"]
+        # result = results["xc_functional"]
         # self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_RPBE")
 
     # Error
     # def test_abinit_16(self):
         # results = get_results("xc_functionals/abinit_16")
-        # result = results["XC_functional"]
+        # result = results["xc_functional"]
         # self.assertEqual(result, "1.0*GGA_XC_HCTH_93")
 
     # Error
     # def test_abinit_17(self):
         # results = get_results("xc_functionals/abinit_17")
-        # result = results["XC_functional"]
+        # result = results["xc_functional"]
         # self.assertEqual(result, "1.0*GGA_XC_HCTH_120")
 
     # Error
     # def test_abinit_26(self):
         # results = get_results("xc_functionals/abinit_26")
-        # result = results["XC_functional"]
+        # result = results["xc_functional"]
         # self.assertEqual(result, "1.0*GGA_XC_HCTH_147")
 
     # Error
     # def test_abinit_27(self):
         # results = get_results("xc_functionals/abinit_27")
-        # result = results["XC_functional"]
+        # result = results["xc_functional"]
         # self.assertEqual(result, "1.0*GGA_XC_HCTH_407")
 
     def test_abinit_100(self):
         results = get_result("xc_functionals/abinit_100")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*HF_X")
 
     def test_libxc_001(self):
         results = get_result("xc_functionals/libxc_001")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*LDA_X")
 
     def test_libxc_010(self):
         results = get_result("xc_functionals/libxc_010")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*LDA_C_PZ_MOD")
 
     def test_libxc_101(self):
         results = get_result("xc_functionals/libxc_101")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*GGA_X_PBE")
 
     def test_libxc_101130(self):
         results = get_result("xc_functionals/libxc_101130")
-        result = results["XC_functional"]
+        result = results["xc_functional"]
         self.assertEqual(result, "1.0*GGA_C_PBE_1.0*GGA_X_PBE")
 
 
