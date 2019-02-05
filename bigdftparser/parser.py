@@ -17,6 +17,7 @@ import re
 import logging
 import importlib
 from nomadcore.baseclasses import ParserInterface
+logger = logging.getLogger("nomad")
 
 
 class BigDFTParser(ParserInterface):
@@ -27,21 +28,8 @@ class BigDFTParser(ParserInterface):
     After the implementation has been setup, you can parse the files with
     parse().
     """
-    def __init__(
-        self, metainfo_to_keep=None, backend=None, default_units=None,
-        metainfo_units=None, debug=True, logger=None, log_level=logging.ERROR,
-        store=True
-    ):
-        super(BigDFTParser, self).__init__(
-            metainfo_to_keep, backend, default_units,
-            metainfo_units, debug, log_level, store
-        )
-
-        if logger is not None:
-            self.logger = logger
-            self.logger.debug('received logger')
-        else:
-            self.logger = logging.getLogger(__name__)
+    def __init__(self, metainfo_to_keep=None, backend=None, default_units=None, metainfo_units=None, debug=True, log_level=logging.ERROR, store=True):
+        super(BigDFTParser, self).__init__(metainfo_to_keep, backend, default_units, metainfo_units, debug, log_level, store)
 
     def setup_version(self):
         """Setups the version by looking at the output file and the version
@@ -62,7 +50,7 @@ class BigDFTParser(ParserInterface):
 
         if version_id is None:
             msg = "Could not find a version specification from the given main file."
-            self.logger.exception(msg)
+            logger.exception(msg)
             raise RuntimeError(msg)
 
         # Setup the root folder to the fileservice that is used to access files
@@ -90,17 +78,17 @@ class BigDFTParser(ParserInterface):
         try:
             parser_module = importlib.import_module(base)
         except ImportError:
-            self.logger.warning("Could not find a parser for version '{}'. Trying to default to the base implementation for BigDFT 1.8.0".format(version_id))
+            logger.warning("Could not find a parser for version '{}'. Trying to default to the base implementation for BigDFT 1.8.0".format(version_id))
             base = "bigdftparser.versions.bigdft18.mainparser"
             try:
                 parser_module = importlib.import_module(base)
             except ImportError:
-                self.logger.exception("Could not find the module '{}'".format(base))
+                logger.exception("Could not find the module '{}'".format(base))
                 raise
         try:
             class_name = "BigDFTMainParser"
             parser_class = getattr(parser_module, class_name)
         except AttributeError:
-            self.logger.exception("A parser class '{}' could not be found in the module '[]'.".format(class_name, parser_module))
+            logger.exception("A parser class '{}' could not be found in the module '[]'.".format(class_name, parser_module))
             raise
         self.main_parser = parser_class(self.parser_context)
