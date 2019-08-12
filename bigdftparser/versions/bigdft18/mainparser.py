@@ -1,11 +1,11 @@
 # Copyright 2016-2018 Lauri Himanen, Fawzi Mohamed
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ from yaml import Loader, YAMLError
 from yaml import ScalarNode, SequenceNode, MappingNode, MappingEndEvent
 from nomadcore.baseclasses import AbstractBaseParser
 from bigdftparser.generic.libxc_codes import LIB_XC_MAPPING
+import ase.data
 LOGGER = logging.getLogger("nomad")
 
 
@@ -143,8 +144,11 @@ class BigDFTMainParser(AbstractBaseParser):
         np_labels = []
         positions = value["Positions"]
         for position in positions:
-            np_positions.append(*position.values())
-            np_labels.append(*position.keys())
+            for key, value in position.items():
+                # Not all keys are chemical symbols, e.g. spin, etc.
+                if key in ase.data.chemical_symbols:
+                    np_positions.append(value)
+                    np_labels.append(key)
         np_positions = np.array(np_positions)
         np_labels = np.array(np_labels)
         self.backend.addArrayValues("atom_positions", np_positions, unit="angstrom")
