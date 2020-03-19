@@ -64,7 +64,7 @@ class BigDFTParser(ParserInterface):
         self.setup_main_parser(version_id)
 
     def get_metainfo_filename(self):
-        return "big_dft.nomadmetainfo.json"
+        return "bigdft.nomadmetainfo.json"
 
     def get_parser_info(self):
         return {'name': 'big-dft-parser', 'version': '1.0'}
