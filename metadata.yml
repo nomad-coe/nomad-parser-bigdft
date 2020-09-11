@@ -1,7 +1,0 @@
-code-label: BigDFT
-code-label-style: 'Capitals: B,D,F,T,'
-code-url: http://bigdft.org/
-parser-dir-name: dependencies/parsers/bigdft/
-parser-git-url: https://gitlab.mpcdf.mpg.de/nomad-lab/parser-bigdft
-parser-specific: ''
-table-of-files: ''
