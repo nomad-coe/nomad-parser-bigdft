@@ -58,6 +58,15 @@ class BigDFTMainParser(AbstractBaseParser):
         """
         self.prepare()
         self.print_json_header()
+
+        def lower_key(value):
+            if isinstance(value, dict):
+                return {key.lower(): lower_key(val) for key, val in value.items()}
+            elif isinstance(value, list):
+                return [lower_key(v) for v in value]
+            else:
+                return value
+
         with open(filepath, "r") as fin:
             try:
                 # Open default sections and output default information
@@ -80,6 +89,7 @@ class BigDFTMainParser(AbstractBaseParser):
 
                     function = self.key_to_funct_map.get(key)
                     if function is not None:
+                        value = lower_key(value)
                         function(value)
 
                 # Close default sections
@@ -118,24 +128,26 @@ class BigDFTMainParser(AbstractBaseParser):
     #===========================================================================
     # The following functions handle the different sections in the output
     def ground_state_optimization(self, value):
-        subspace_optimization = value[0]["Hamiltonian Optimization"]
-        subspace_optimization = subspace_optimization[0]["Subspace Optimization"]
-        wavefunction_iterations = subspace_optimization["Wavefunctions Iterations"]
+        if value[0].get("hamiltonian optimization") is None:
+            return
+        subspace_optimization = value[0]["hamiltonian optimization"]
+        subspace_optimization = subspace_optimization[0]["subspace optimization"]
+        wavefunction_iterations = subspace_optimization["wavefunctions iterations"]
         n_iterations = len(wavefunction_iterations)
         self.backend.addValue("number_of_scf_iterations", n_iterations)
         for iteration in wavefunction_iterations:
 
             scf_id = self.backend.openSection("section_scf_iteration")
-            energies = iteration["Energies"]
+            energies = iteration["energies"]
             # ekin = energies["Ekin"]
             # epot = energies["Epot"]
             # enl = energies["Enl"]
             # eh = energies["EH"]
             # gradient = iteration["gnrm"]
-            exc = energies.get("EXC")  # Use get instead, because this value is not always present
-            evxc = energies.get("EvXC")  # Use get instead, because this value is not always present
-            etotal = iteration["EKS"]
-            energy_change = iteration["D"]
+            exc = energies.get("exc")  # Use get instead, because this value is not always present
+            evxc = energies.get("evxc")  # Use get instead, because this value is not always present
+            etotal = iteration["eks"]
+            energy_change = iteration["d"]
             self.backend.addRealValue("energy_total_scf_iteration", etotal, unit="hartree")
             if exc is not None:
                 self.backend.addRealValue("energy_XC_scf_iteration", exc, unit="hartree")
@@ -147,9 +159,10 @@ class BigDFTMainParser(AbstractBaseParser):
     def atomic_structure(self, value):
         np_positions = []
         np_labels = []
-        positions = value["Positions"]
+        positions = value["positions"]
         for position in positions:
             for key, value in position.items():
+                key = key.title()
                 # Not all keys are chemical symbols, e.g. spin, etc.
                 if key in ase.data.chemical_symbols:
                     np_positions.append(value)
@@ -160,16 +173,16 @@ class BigDFTMainParser(AbstractBaseParser):
         self.backend.addArrayValues("atom_labels", np_labels)
 
     def simulation_domain(self, value):
-        simulation_cell = np.diag(value["Angstroem"])
+        simulation_cell = np.diag(value["angstroem"])
         self.backend.addArrayValues("simulation_cell", simulation_cell, unit="angstrom")
 
     def atomic_system_properties(self, value):
         # Number of atoms
-        n_atoms = value["Number of atoms"]
+        n_atoms = value["number of atoms"]
         self.backend.addValue("number_of_atoms", n_atoms)
 
         # Periodicity
-        boundary = value["Boundary Conditions"]
+        boundary = value["boundary conditions"]
         if boundary == "Free":
             periodic_dimensions = np.array([False, False, False])
         elif boundary == "Periodic":
@@ -202,8 +215,8 @@ class BigDFTMainParser(AbstractBaseParser):
 
     def dft_parameters(self, value):
         # XC functional
-        exchange_settings = value["eXchange Correlation"]
-        xc_id = exchange_settings["XC ID"]
+        exchange_settings = value["exchange correlation"]
+        xc_id = exchange_settings["xc id"]
 
         # LibXC codes, see http://bigdft.org/Wiki/index.php?title=XC_codes
         if xc_id < 0:
