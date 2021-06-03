@@ -49,8 +49,8 @@ def test_basic(parser):
     assert True not in sec_system.configuration_periodic_dimensions
 
     sec_scc = sec_run.section_single_configuration_calculation[0]
-    assert sec_scc.energy_total.magnitude == approx(-8.66869132e-17)
-    assert sec_scc.atom_forces[0][2].magnitude == approx(4.67181276e-09)
+    assert sec_scc.energy_total.value.magnitude == approx(-8.66869132e-17)
+    assert sec_scc.forces_total.value[0][2].magnitude == approx(4.67181276e-09)
     sec_scfs = sec_scc.section_scf_iteration
     assert len(sec_scfs) == 11
     assert sec_scfs[3].energy_total_scf_iteration.magnitude == approx(-8.66861188e-17)

@@ -30,7 +30,7 @@ except Exception:
 from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
-    SingleConfigurationCalculation, ScfIteration
+    SingleConfigurationCalculation, ScfIteration, Energy, Forces
 
 
 class BigDFTParser(FairdiParser):
@@ -272,11 +272,13 @@ class BigDFTParser(FairdiParser):
 
         energy = self._extract('Energy (Hartree)', self.yaml_dict)
         if energy is not None:
-            sec_scc.energy_total = energy * ureg.hartree
+            sec_scc.m_add_sub_section(SingleConfigurationCalculation.energy_total, Energy(
+                value=energy * ureg.hartree))
 
         forces = self._extract('Atomic Forces (Ha/Bohr)', self.yaml_dict)
         if forces is not None:
-            sec_scc.atom_forces = [list(f.values())[0] for f in forces] * (ureg.hartree / ureg.bohr)
+            sec_scc.m_add_sub_section(SingleConfigurationCalculation.forces_total, Forces(
+                value=[list(f.values())[0] for f in forces] * (ureg.hartree / ureg.bohr)))
 
         data = self._extract('Ground State Optimization', self.yaml_dict, [{}])
         hamiltonian = self._extract('hamiltonian optimization', data[0])
