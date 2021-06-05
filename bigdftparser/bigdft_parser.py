@@ -287,7 +287,7 @@ class BigDFTParser(FairdiParser):
 
         energy_mapping = {
             'exc': 'energy_XC', 'evxc': 'energy_XC_potential',
-            'eh': 'energy_correction_hartree', 'ekin': 'electronic_kinetic_energy',
+            'eh': 'energy_correction_hartree', 'ekin': 'energy_kinetic_electronic',
             'eks': 'energy_total', 'd': 'energy_change'}
 
         subspace = self._extract('subspace optimization', hamiltonian[0], {})
@@ -299,12 +299,14 @@ class BigDFTParser(FairdiParser):
             for key, val in energies.items():
                 key = energy_mapping.get(key.lower())
                 if key is not None:
-                    setattr(sec_scf, '%s_scf_iteration' % key, val * ureg.hartree)
+                    sec_scf.m_add_sub_section(getattr(
+                        ScfIteration, key), Energy(value=val * ureg.hartree))
 
             for key, val in iteration.items():
                 key = energy_mapping.get(key.lower())
                 if key is not None:
-                    setattr(sec_scf, '%s_scf_iteration' % key, val * ureg.hartree)
+                    sec_scf.m_add_sub_section(getattr(
+                        ScfIteration, key), Energy(value=val * ureg.hartree))
 
     def parse(self, filepath, archive, logger):
         self.filepath = os.path.abspath(filepath)

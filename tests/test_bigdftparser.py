@@ -51,11 +51,11 @@ def test_basic(parser):
     sec_scc = sec_run.section_single_configuration_calculation[0]
     assert sec_scc.energy_total.value.magnitude == approx(-8.66869132e-17)
     assert sec_scc.forces_total.value[0][2].magnitude == approx(4.67181276e-09)
-    sec_scfs = sec_scc.section_scf_iteration
+    sec_scfs = sec_scc.scf_iteration
     assert len(sec_scfs) == 11
-    assert sec_scfs[3].energy_total_scf_iteration.magnitude == approx(-8.66861188e-17)
-    assert sec_scfs[6].energy_XC_potential_scf_iteration.magnitude == approx(-2.7272656e-17)
-    assert sec_scfs[7].electronic_kinetic_energy_scf_iteration.magnitude == approx(6.34717211e-17)
+    assert sec_scfs[3].energy_total.value.magnitude == approx(-8.66861188e-17)
+    assert sec_scfs[6].energy_XC_potential.value.magnitude == approx(-2.7272656e-17)
+    assert sec_scfs[7].energy_kinetic_electronic.value.magnitude == approx(6.34717211e-17)
 
 
 def test_1(parser):
