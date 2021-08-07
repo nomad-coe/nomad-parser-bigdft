@@ -35,27 +35,27 @@ def test_basic(parser):
     archive = EntryArchive()
     parser.parse('tests/data/n2_output.out', archive, None)
 
-    sec_run = archive.section_run[0]
-    assert sec_run.program_version == '1.8'
+    sec_run = archive.run[0]
+    assert sec_run.program.version == '1.8'
 
-    sec_method = sec_run.section_method[0]
-    assert sec_method.scf_max_iteration == 50
-    assert sec_method.number_of_spin_channels == 1
-    assert sec_method.section_XC_functionals[0].XC_functional_name == 'LDA_XC_TETER93'
+    sec_method = sec_run.method[0]
+    assert sec_method.scf.n_max_iteration == 50
+    assert sec_method.electronic.n_spin_channels == 1
+    assert sec_method.dft.xc_functional.contributions[0].name == 'LDA_XC_TETER93'
 
-    sec_system = sec_run.section_system[0]
-    assert sec_system.atom_positions[0][2].magnitude == approx(3.60977554e-10)
-    assert sec_system.lattice_vectors[2][2].magnitude == approx(8.3345e-10)
-    assert True not in sec_system.configuration_periodic_dimensions
+    sec_system = sec_run.system[0]
+    assert sec_system.atoms.positions[0][2].magnitude == approx(3.60977554e-10)
+    assert sec_system.atoms.lattice_vectors[2][2].magnitude == approx(8.3345e-10)
+    assert True not in sec_system.atoms.periodic
 
-    sec_scc = sec_run.section_single_configuration_calculation[0]
-    assert sec_scc.energy_total.value.magnitude == approx(-8.66869132e-17)
-    assert sec_scc.forces_total.value[0][2].magnitude == approx(4.67181276e-09)
+    sec_scc = sec_run.calculation[0]
+    assert sec_scc.energy.total.value.magnitude == approx(-8.66869132e-17)
+    assert sec_scc.forces.total.value[0][2].magnitude == approx(4.67181276e-09)
     sec_scfs = sec_scc.scf_iteration
     assert len(sec_scfs) == 11
-    assert sec_scfs[3].energy_total.value.magnitude == approx(-8.66861188e-17)
-    assert sec_scfs[6].energy_XC_potential.value.magnitude == approx(-2.7272656e-17)
-    assert sec_scfs[7].energy_kinetic_electronic.value.magnitude == approx(6.34717211e-17)
+    assert sec_scfs[3].energy.total.value.magnitude == approx(-8.66861188e-17)
+    assert sec_scfs[6].energy.xc_potential.value.magnitude == approx(-2.7272656e-17)
+    assert sec_scfs[7].energy.kinetic_electronic.value.magnitude == approx(6.34717211e-17)
 
 
 def test_1(parser):

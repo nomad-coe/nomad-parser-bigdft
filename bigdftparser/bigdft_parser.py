@@ -29,8 +29,16 @@ except Exception:
 
 from nomad.units import ureg
 from nomad.parsing import FairdiParser
-from nomad.datamodel.metainfo.common_dft import Run, Method, System, XCFunctionals,\
-    SingleConfigurationCalculation, ScfIteration, Energy, Forces
+from nomad.datamodel.metainfo.run.run import Run, Program
+from nomad.datamodel.metainfo.run.method import (
+    Method, MethodReference, DFT, XCFunctional, Functional, Electronic, Scf
+)
+from nomad.datamodel.metainfo.run.system import (
+    System, SystemReference, Atoms
+)
+from nomad.datamodel.metainfo.run.calculation import (
+    Calculation, Energy, EnergyEntry, Forces, ForcesEntry, ScfIteration
+)
 
 
 class BigDFTParser(FairdiParser):
@@ -208,13 +216,14 @@ class BigDFTParser(FairdiParser):
         return default
 
     def parse_method(self):
-        sec_method = self.archive.section_run[0].m_create(Method)
-        sec_method.electronic_structure_method = 'DFT'
+        sec_method = self.archive.run[0].m_create(Method)
+        sec_dft = sec_method.m_create(DFT)
 
         data = self._extract('dft', self.yaml_dict, {})
-        sec_method.total_charge = self._extract('qcharge', data, 0)
-        sec_method.scf_max_iteration = self._extract('itermax', data, 0)
-        sec_method.number_of_spin_channels = self._extract('nspin', data, 1)
+        sec_electronic = sec_method.m_create(Electronic)
+        sec_electronic.charge = self._extract('qcharge', data, 0)
+        sec_electronic.n_spin_channels = self._extract('nspin', data, 1)
+        sec_method.scf = Scf(n_max_iteration=self._extract('itermax', data, 0))
 
         xc_id = self._extract('xc id', data)
         if xc_id is None:
@@ -227,13 +236,18 @@ class BigDFTParser(FairdiParser):
             xc_functionals = self.xc_mapping.get(xc_id, [])
 
         xc_functionals = [f for f in xc_functionals if f is not None]
+        sec_xc_functional = sec_dft.m_create(XCFunctional)
         for functional in xc_functionals:
-            sec_xc_functional = sec_method.m_create(XCFunctionals)
-            sec_xc_functional.XC_functional_name = functional
-        sec_method.XC_functional = '_'.join(xc_functionals)
+            if '_X_' in functional:
+                sec_xc_functional.exchange.append(Functional(name=functional))
+            elif '_C_' in functional:
+                sec_xc_functional.correlation.append(Functional(name=functional))
+            else:
+                sec_xc_functional.contributions.append(Functional(name=functional))
+        sec_xc_functional.name = '_'.join(xc_functionals)
 
     def parse_system(self):
-        sec_system = self.archive.section_run[0].m_create(System)
+        sec_system = self.archive.run[0].m_create(System)
 
         data = self._extract('Atomic structure', self.yaml_dict, {})
         labels = []
@@ -244,41 +258,44 @@ class BigDFTParser(FairdiParser):
                     # some entries may not be symbols
                     labels.append(label)
                     positions.append(position)
+
+        sec_atoms = sec_system.m_create(Atoms)
         if labels:
-            sec_system.atom_positions = positions * ureg.angstrom
-            sec_system.atom_labels = labels
+            sec_atoms.positions = positions * ureg.angstrom
+            sec_atoms.labels = labels
 
         cell = self._extract('cell', data)
         if cell is None:
             data = self._extract('Sizes of the simulation domain', self.yaml_dict, {})
             cell = self._extract('angstroem', data)
         if cell is not None:
-            sec_system.lattice_vectors = np.diag(cell) * ureg.angstrom
-            sec_system.configuration_periodic_dimensions = [True, True, True]
+            sec_atoms.lattice_vectors = np.diag(cell) * ureg.angstrom
+            sec_atoms.periodic = [True, True, True]
 
         data = self._extract('Atomic System Properties', self.yaml_dict, {})
-        sec_system.number_of_atoms = self._extract('number of atoms', data, 0)
+        sec_atoms.n_atoms = self._extract('number of atoms', data, 0)
 
         pbc = self._extract('boundary conditions', data, 'Periodic').lower()
         if pbc == 'free':
-            sec_system.configuration_periodic_dimensions = [False, False, False]
+            sec_atoms.periodic = [False, False, False]
         elif pbc == 'periodic':
-            sec_system.configuration_periodic_dimensions = [True, True, True]
+            sec_atoms.periodic = [True, True, True]
         elif pbc == 'surface':
-            sec_system.configuration_periodic_dimensions = [True, False, True]
+            sec_atoms.periodic = [True, False, True]
 
     def parse_scc(self):
-        sec_scc = self.archive.section_run[0].m_create(SingleConfigurationCalculation)
+        sec_scc = self.archive.run[0].m_create(Calculation)
 
         energy = self._extract('Energy (Hartree)', self.yaml_dict)
+        sec_energy = sec_scc.m_create(Energy)
         if energy is not None:
-            sec_scc.m_add_sub_section(SingleConfigurationCalculation.energy_total, Energy(
-                value=energy * ureg.hartree))
+            sec_energy.total = EnergyEntry(value=energy * ureg.hartree)
 
         forces = self._extract('Atomic Forces (Ha/Bohr)', self.yaml_dict)
+        sec_forces = sec_scc.m_create(Forces)
         if forces is not None:
-            sec_scc.m_add_sub_section(SingleConfigurationCalculation.forces_total, Forces(
-                value=[list(f.values())[0] for f in forces] * (ureg.hartree / ureg.bohr)))
+            sec_forces.total = ForcesEntry(
+                value=[list(f.values())[0] for f in forces] * (ureg.hartree / ureg.bohr))
 
         data = self._extract('Ground State Optimization', self.yaml_dict, [{}])
         hamiltonian = self._extract('hamiltonian optimization', data[0])
@@ -286,27 +303,27 @@ class BigDFTParser(FairdiParser):
             return
 
         energy_mapping = {
-            'exc': 'energy_XC', 'evxc': 'energy_XC_potential',
+            'exc': 'energy_xc', 'evxc': 'energy_xc_potential',
             'eh': 'energy_correction_hartree', 'ekin': 'energy_kinetic_electronic',
             'eks': 'energy_total', 'd': 'energy_change'}
 
         subspace = self._extract('subspace optimization', hamiltonian[0], {})
         wavefunction = self._extract('wavefunctions iterations', subspace, [])
-        sec_scc.number_of_scf_iterations = len(wavefunction)
+        sec_scc.n_scf_iterations = len(wavefunction)
         for iteration in wavefunction:
             sec_scf = sec_scc.m_create(ScfIteration)
             energies = self._extract('energies', iteration, {})
+            energies.update(iteration.items())
+            sec_scf_energy = sec_scf.m_create(Energy)
             for key, val in energies.items():
                 key = energy_mapping.get(key.lower())
                 if key is not None:
-                    sec_scf.m_add_sub_section(getattr(
-                        ScfIteration, key), Energy(value=val * ureg.hartree))
-
-            for key, val in iteration.items():
-                key = energy_mapping.get(key.lower())
-                if key is not None:
-                    sec_scf.m_add_sub_section(getattr(
-                        ScfIteration, key), Energy(value=val * ureg.hartree))
+                    key = key.replace('energy_', '')
+                    if key == 'change':
+                        sec_scf_energy.change = val * ureg.hartree
+                    else:
+                        sec_scf_energy.m_add_sub_section(getattr(
+                            Energy, key), EnergyEntry(value=val * ureg.hartree))
 
     def parse(self, filepath, archive, logger):
         self.filepath = os.path.abspath(filepath)
@@ -326,14 +343,14 @@ class BigDFTParser(FairdiParser):
                     return
 
         sec_run = self.archive.m_create(Run)
-        sec_run.program_name = 'BigDFT'
-        sec_run.program_basis_set_type = 'real-space grid'
-        sec_run.program_version = str(self.yaml_dict.pop('Version Number', ''))
+        sec_run.program = Program(
+            name='BigDFT',
+            version=str(self.yaml_dict.pop('Version Number', '')))
 
         self.parse_method()
         self.parse_system()
         self.parse_scc()
 
-        sec_scc = sec_run.section_single_configuration_calculation[-1]
-        sec_scc.single_configuration_calculation_to_system_ref = sec_run.section_system[-1]
-        sec_scc.single_configuration_to_calculation_method_ref = sec_run.section_method[-1]
+        sec_scc = sec_run.calculation[-1]
+        sec_scc.system_ref.append(SystemReference(value=sec_run.system[-1]))
+        sec_scc.method_ref.append(MethodReference(value=sec_run.method[-1]))
