@@ -31,7 +31,7 @@ from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.datamodel.metainfo.run.run import Run, Program
 from nomad.datamodel.metainfo.run.method import (
-    Method, MethodReference, DFT, XCFunctional, Functional, Electronic, Scf
+    Method, MethodReference, DFT, XCFunctional, Functional, Electronic, Scf, BasisSet
 )
 from nomad.datamodel.metainfo.run.system import (
     System, SystemReference, Atoms
@@ -217,6 +217,7 @@ class BigDFTParser(FairdiParser):
 
     def parse_method(self):
         sec_method = self.archive.run[0].m_create(Method)
+        sec_method.basis_set.append(BasisSet(type='real-space grid'))
         sec_dft = sec_method.m_create(DFT)
 
         data = self._extract('dft', self.yaml_dict, {})
