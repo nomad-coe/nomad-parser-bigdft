@@ -29,14 +29,14 @@ except Exception:
 
 from nomad.units import ureg
 from nomad.parsing import FairdiParser
-from nomad.datamodel.metainfo.run.run import Run, Program
-from nomad.datamodel.metainfo.run.method import (
-    Method, MethodReference, DFT, XCFunctional, Functional, Electronic, Scf, BasisSet
+from nomad.datamodel.metainfo.simulation.run import Run, Program
+from nomad.datamodel.metainfo.simulation.method import (
+    Method, DFT, XCFunctional, Functional, Electronic, Scf, BasisSet
 )
-from nomad.datamodel.metainfo.run.system import (
-    System, SystemReference, Atoms
+from nomad.datamodel.metainfo.simulation.system import (
+    System, Atoms
 )
-from nomad.datamodel.metainfo.run.calculation import (
+from nomad.datamodel.metainfo.simulation.calculation import (
     Calculation, Energy, EnergyEntry, Forces, ForcesEntry, ScfIteration
 )
 
@@ -353,5 +353,5 @@ class BigDFTParser(FairdiParser):
         self.parse_scc()
 
         sec_scc = sec_run.calculation[-1]
-        sec_scc.system_ref.append(SystemReference(value=sec_run.system[-1]))
-        sec_scc.method_ref.append(MethodReference(value=sec_run.method[-1]))
+        sec_scc.system_ref = sec_run.system[-1]
+        sec_scc.method_ref = sec_run.method[-1]
